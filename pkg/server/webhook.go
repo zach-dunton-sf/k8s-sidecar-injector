@@ -353,8 +353,11 @@ func createPatch(pod *corev1.Pod, inj *config.InjectionConfig, annotations map[s
 	// this mutates inj.Containers with our environment vars
 	mutatedInjectedContainers := mergeEnvVars(inj.Environment, inj.Containers)
 	mutatedInjectedContainers = mergeVolumeMounts(inj.VolumeMounts, mutatedInjectedContainers)
+
 	// next, patch containers with our injected containers
 	patch = append(patch, addContainers(pod.Spec.Containers, mutatedInjectedContainers, "/spec/containers")...)
+	// next, patch initContainers with our injected initContainers
+	patch = append(patch, addContainers(pod.Spec.InitContainers, inj.InitContainers, "/spec/initContainers")...)
 	// now, patch all existing containers with the env vars and volume mounts
 	patch = append(patch, setEnvironment(pod.Spec.Containers, inj.Environment)...)
 	patch = append(patch, addVolumeMounts(pod.Spec.Containers, inj.VolumeMounts)...)
